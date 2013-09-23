@@ -1,0 +1,1 @@
+/home/iwen/LinuxDeepin/PYSearch/build/CMakeFiles/zh-py-sql.dir
