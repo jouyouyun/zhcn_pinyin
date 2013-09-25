@@ -19,10 +19,10 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  **/
 
-#include "dbus_database.h"
+#include "dbus_sqlite.h"
 
 int main()
 {
-	sys_says("zh pinyin inface\n");
-	dbus_pinyin();
+    g_print ("zh pinyin inface\n");
+    dbus_pinyin();
 }

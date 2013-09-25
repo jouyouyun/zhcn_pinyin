@@ -52,12 +52,26 @@ const char *_lock_dbus_iface_xml =
 "<?xml version=\"1.0\"?>\n"
 "<node>\n"
 "   <interface name=\""DBUS_PYSQL_INFACE"\">\n"
+"       <method name=\"get_pinyin\">\n"
+"           <arg name=\"zhcn\" type=\"s\" direction=\"in\">\n"
+"           </arg>\n"
+"           <arg name=\"pinyin\" type=\"s\" direction=\"out\">\n"
+"           </arg>\n"
+"       </method>\n"
 "       <method name=\"init_data_sql\">\n"
 "           <arg name=\"data\" type=\"s\" direction=\"in\">\n"
 "           </arg>\n"
 "           <arg name=\"db_path\" type=\"s\" direction=\"in\">\n"
 "           </arg>\n"
 "           <arg name=\"ret\" type=\"i\" direction=\"out\">\n"
+"           </arg>\n"
+"       </method>\n"
+"       <method name=\"get_ret_via_key\">\n"
+"           <arg name=\"key\" type=\"s\" direction=\"in\">\n"
+"           </arg>\n"
+"           <arg name=\"db_path\" type=\"s\" direction=\"in\">\n"
+"           </arg>\n"
+"           <arg name=\"str_ret\" type=\"s\" direction=\"out\">\n"
 "           </arg>\n"
 "       </method>\n"
 "       <method name=\"add_value_count\">\n"
@@ -198,13 +212,36 @@ _bus_method_call (GDBusConnection * connection,
     GVariant * retval = NULL;
     GError * error = NULL;
 
-    if (g_strcmp0 (method, "dbus_get_pinyin") == 0) {
+    if (g_strcmp0 (method, "get_pinyin") == 0) {
         const gchar *buf = NULL;
+        gchar* pinyin = NULL;
         
         g_variant_get (params, "(s)", &buf);
-        retval = g_variant_new("(s)", dbus_get_pinyin(buf));
+        pinyin = get_pinyin (buf);
+        retval = g_variant_new("(s)", pinyin ? pinyin : "");
     } else if (g_strcmp0 (method, "finalize_dbus_loop") == 0) {
         finalize_dbus_loop();
+    } else if (g_strcmp0 (method, "init_data_sql") == 0) {
+        const gchar* data = NULL;
+        const gchar* path = NULL;
+
+        g_variant_get (params, "(ss)", &data, &path);
+        retval = g_variant_new ("(i)", init_data_sql (data, path));
+    } else if (g_strcmp0 (method, "get_ret_via_key") == 0) {
+        const gchar* key = NULL;
+        const gchar* path = NULL;
+        gchar* str_ret = NULL;
+
+        g_variant_get (params, "(ss)", &key, &path);
+        str_ret = get_ret_via_key (key, path);
+        retval = g_variant_new ("(s)", str_ret ? str_ret : "");
+    } else if (g_strcmp0 (method, "add_value_count") == 0) {
+        const gchar* table = NULL;
+        const gchar* value = NULL;
+        const gchar* path = NULL;
+
+        g_variant_get (params, "(sss)", &table, &value, &path);
+        retval = g_variant_new ("(i)", add_value_count (table, value, path));
     } else {
         g_warning ("Calling method '%s' on lock and it's unknown", method);
     }
