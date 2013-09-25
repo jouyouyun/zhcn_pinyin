@@ -19,11 +19,32 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  **/
 
+#ifndef __PINYIN_TRIE_H__
+#define __PINYIN_TRIE_H__
+
 #include "dbus_pinyin.h"
 
-int main()
-{
-    g_print ("zh pinyin inface\n");
-    init_hash_table ();
-    dbus_pinyin();
-}
+#define EN_LEN  26
+
+struct pos_array {
+    int cnt;   //存储的数据个数
+    int* pos;  //数据数组
+};
+
+struct _pinyin_trie {
+    char flag;  //是否有数据
+    char ch;    //当前字母
+    struct pos_array ret_pos;
+    struct _pinyin_trie* next[EN_LEN];
+};
+typedef struct _pinyin_trie pinyin_trie;
+
+//gchar* create_pinyin_trie (gchar* data);
+pinyin_trie* create_trie_node (char ch);
+int ch_to_num (char ch);
+void insert_pinyin (const char* pinyin, int pos, pinyin_trie* root);
+void insert_char (char ch, int pos, pinyin_trie* node);
+struct pos_array* search_trie (const char* keys, pinyin_trie* root);
+void destroy_trie (pinyin_trie* cur_node);
+
+#endif

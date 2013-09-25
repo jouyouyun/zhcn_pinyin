@@ -19,7 +19,7 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  **/
 
-#include "dbus_sqlite.h"
+#include "dbus_pinyin.h"
 #include <gio/gio.h>
 
 //internal functions

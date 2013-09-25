@@ -19,8 +19,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef __DBUS_SQLITE_H__
-#define __DBUS_SQLITE_H__
+#ifndef __DBUS_PINYIN_H__
+#define __DBUS_PINYIN_H__
 
 #include <glib.h>
 
@@ -33,5 +33,11 @@ gint init_data_sql (const gchar* data, const gchar* db_path);
 gchar* get_ret_via_key (const gchar* key, const gchar* db_path);
 gint add_value_count (const gchar* table, const gchar* value, 
         const gchar* db_path);
+
+/* trie */
+void init_hash_table ();
+gchar* create_pinyin_trie (const gchar* data);
+gchar* get_ret_via_keys (const gchar* keys, const gchar* str_md5);
+void remove_trie (const gchar* str_md5);
 
 #endif

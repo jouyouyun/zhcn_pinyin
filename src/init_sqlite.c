@@ -19,7 +19,7 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  **/
 
-#include "dbus_sqlite.h"
+#include "dbus_pinyin.h"
 #include <sqlite3.h>
 #include <string.h>
 #include <stdio.h>
