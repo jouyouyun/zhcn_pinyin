@@ -1,6 +1,6 @@
 /**
- * Copyright (c) 2011 ~ 2012 Deepin, Inc.
- *               2011 ~ 2012 jouyouyun
+ * Copyright (c) 2011 ~ 2013 Deepin, Inc.
+ *               2011 ~ 2013 jouyouyun
  *
  * Author:      jouyouyun <jouyouwen717@gmail.com>
  * Maintainer:  jouyouyun <jouyouwen717@gmail.com>
@@ -20,16 +20,19 @@
  **/
 
 #include "pinyin_trie.h"
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 
-/*GArray* trie_array = NULL;*/
 GHashTable* trie_table = NULL;
 GHashTable* data_table = NULL;
 
 void init_hash_table ()
 {
-    /*trie_array = g_array_new (TRUE, FALSE, sizeof (pinyin_trie*));*/
-    trie_table = g_hash_table_new (g_direct_hash, g_direct_equal);
-    data_table = g_hash_table_new (g_direct_hash, g_direct_equal);
+    trie_table = g_hash_table_new_full (g_str_hash, g_str_equal, 
+            (GDestroyNotify)g_free, (GDestroyNotify)remove_trie);
+    data_table = g_hash_table_new_full (g_str_hash, g_str_equal, 
+            (GDestroyNotify)g_free, (GDestroyNotify)remove_data);
 }
 
 gchar* create_pinyin_trie(const gchar* data)
@@ -51,15 +54,13 @@ gchar* create_pinyin_trie(const gchar* data)
         g_warning ("create trie failed!\n");
         return NULL;
     }
-    /*trie_array = g_array_append_val (trie_array, root);*/
 
     str_md5 = g_compute_checksum_for_string (G_CHECKSUM_MD5, 
             data, -1);
-    g_hash_table_insert (trie_table, str_md5, root);
 
-    data_split = g_strsplit (data, ",", -1);
-    g_hash_table_insert (data_table, str_md5, g_strdupv (data_split));
+    data_split = g_strsplit (data, ";", -1);
     for (; data_split[i] != NULL; i++ ) {
+        fprintf (stdout, "word: %s\n", data_split[i]);
         pinyin = get_pinyin (data_split[i]);
         if ( !pinyin ) {
             err_flag = 1;
@@ -69,7 +70,6 @@ gchar* create_pinyin_trie(const gchar* data)
         insert_pinyin (pinyin, i, root);
         g_free (pinyin);
     }
-    root = NULL;
 
     if ( err_flag ) {
         g_warning ("get pinyin failed!\n");
@@ -77,13 +77,15 @@ gchar* create_pinyin_trie(const gchar* data)
         return NULL;
     }
 
-    g_strfreev (data_split);
+    g_hash_table_insert (trie_table, str_md5, root);
+    g_hash_table_insert (data_table, g_strdup (str_md5), data_split);
+    g_print ("str md5: %s\n", str_md5);
     return str_md5;
 }
 
 pinyin_trie* create_trie_node (char ch)
 {
-    pinyin_trie* node = g_new0 (pinyin_trie, sizeof (pinyin_trie));
+    pinyin_trie* node = g_new0 (pinyin_trie, 1);
 
     node->flag = 0;
     node->ch = ch;
@@ -95,6 +97,7 @@ void insert_pinyin (const char* pinyin, int pos, pinyin_trie* root)
 {
     int i = 0;
     int k = 0;
+    int len = 0;
     pinyin_trie* cur_node = root;
 
     if ( !pinyin || !root ) {
@@ -111,13 +114,24 @@ void insert_pinyin (const char* pinyin, int pos, pinyin_trie* root)
 
 void insert_char (char ch, int pos, pinyin_trie* node)
 {
+    int i = 0;
+    int len = 0;
     int k = ch_to_num (ch);
+    int* value = NULL;
 
-    node->next[k] = create_trie_node (ch);
-    node->next[k]->flag = 1;
+    if ( !node->next[k] ) {
+        node->next[k] = create_trie_node (ch);
+        node->next[k]->flag = 1;
+    }
     node->next[k]->ret_pos.cnt += 1;
-    node->next[k]->ret_pos.pos = g_new0 (int, sizeof(int));
-    *(node->next[k]->ret_pos.pos) = pos;
+    len = node->next[k]->ret_pos.cnt;
+    /*g_print ("$$$$$ value size: %d\n", len);*/
+    value = calloc (sizeof (int), len);
+    memcpy (value, node->next[k]->ret_pos.pos, (len - 1) * sizeof (int));
+    g_free (node->next[k]->ret_pos.pos);
+    node->next[k]->ret_pos.pos = value;
+    value = NULL;
+    (node->next[k]->ret_pos.pos)[len - 1] = pos;
 }
 
 int ch_to_num (char ch)
@@ -141,7 +155,10 @@ gchar* get_ret_via_keys (const gchar* keys, const gchar* str_md5)
         return NULL;
     }
 
+    /*print_flag ((gchar*)str_md5);*/
+    g_print ("str md5: %s\n", str_md5);
     cur_trie = (pinyin_trie*)g_hash_table_lookup (trie_table, str_md5);
+    /*g_print ("first char: %d\n", cur_trie->next[ch_to_num('w')]->flag);*/
     if ( !cur_trie ) {
         g_warning ("string md5 error in get pinyin trie!\n");
         return NULL;
@@ -162,16 +179,19 @@ gchar* get_ret_via_keys (const gchar* keys, const gchar* str_md5)
     len = pos_buf->cnt;
     for (; i < len; i++ ) {
         k = pos_buf->pos[i];
+        /*fprintf (stderr, "data %d: %s\n", k, data_array[k]);*/
 
         if ( i == 0 ) {
             ret = g_strdup (data_array[k]);
         } else {
-            tmp = g_strdup_printf ("%s,%s", ret, data_array[k]);
+            tmp = g_strdup_printf ("%s;%s", ret, data_array[k]);
             g_free (ret);
             ret = g_strdup (tmp);
             g_free (tmp);
         }
     }
+    g_free (pos_buf);
+    pos_buf = NULL;
 
     return ret;
 }
@@ -204,9 +224,10 @@ struct pos_array* search_trie (const char* keys, pinyin_trie* root)
         return NULL;
     }
 
-    /*ret = g_new0 ((struct pos_array), sizeof (struct pos_array));*/
-    /*memcpy (ret, cur_node->ret_pos, sizeof (cur_node->ret_pos));*/
-    *ret = cur_node->ret_pos;
+    g_print ("%s pos size: %d\n", keys, cur_node->ret_pos.cnt);
+    ret = g_new0 (struct pos_array, sizeof (cur_node->ret_pos));
+    memcpy (ret, &(cur_node->ret_pos), sizeof (cur_node->ret_pos));
+    /**ret = cur_node->ret_pos;*/
 
     return ret;
 }
@@ -237,29 +258,59 @@ void destroy_trie (pinyin_trie* cur_node)
     return ;
 }
 
-void remove_trie (const gchar* str_md5)
+void remove_trie (pinyin_trie* cur_trie)
 {
-    int i = 0;
-    pinyin_trie* cur_trie = NULL;
-    gchar** data_array = NULL;
+    g_print ("remove trie\n");
 
-    if ( !str_md5 ) {
+    if ( !cur_trie ) {
         g_warning ("args error in remove trie!\n");
         return ;
     }
 
-    cur_trie = (pinyin_trie*)g_hash_table_lookup (trie_table, str_md5);
     destroy_trie (cur_trie);
 
-    data_array = (gchar**)g_hash_table_lookup (data_table, str_md5);
-    for ( ; data_array[i] != NULL; i++ ) {
-        g_free (data_array[i]);
-        data_array[i] = NULL;
+    return ;
+}
+
+void remove_data (gchar** data_array)
+{
+    g_print ("remove data\n");
+    g_strfreev (data_array);
+    return;
+    int i = 0;
+
+    if ( !data_array ) {
+        g_warning ("args error in remove trie!\n");
+        return ;
     }
+
     g_strfreev (data_array);
 
-    g_hash_table_remove (trie_table, str_md5);
-    g_hash_table_remove (data_table, str_md5);
-
     return ;
+}
+
+void finalize_data_trie (const gchar* str_md5)
+{
+    gboolean is_ok;
+
+    g_print ("finalize trie md5: %s\n$$$", str_md5);
+    is_ok = g_hash_table_remove (trie_table, str_md5);
+    if ( !is_ok ) {
+        g_warning ("remove trie failed!\n");
+    }
+    is_ok = g_hash_table_remove (data_table, str_md5);
+    if ( !is_ok ) {
+        g_warning ("remove data failed!\n");
+    }
+}
+
+void finalize_hash_table ()
+{
+    if ( !trie_table ) {
+        g_hash_table_destroy (trie_table);
+    }
+
+    if ( !data_table ) {
+        g_hash_table_destroy (data_table);
+    }
 }

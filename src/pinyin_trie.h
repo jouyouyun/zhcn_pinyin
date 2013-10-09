@@ -1,6 +1,6 @@
 /**
- * Copyright (c) 2011 ~ 2012 Deepin, Inc.
- *               2011 ~ 2012 jouyouyun
+ * Copyright (c) 2011 ~ 2013 Deepin, Inc.
+ *               2011 ~ 2013 jouyouyun
  *
  * Author:      jouyouyun <jouyouwen717@gmail.com>
  * Maintainer:  jouyouyun <jouyouwen717@gmail.com>
@@ -46,5 +46,9 @@ void insert_pinyin (const char* pinyin, int pos, pinyin_trie* root);
 void insert_char (char ch, int pos, pinyin_trie* node);
 struct pos_array* search_trie (const char* keys, pinyin_trie* root);
 void destroy_trie (pinyin_trie* cur_node);
+//void remove_trie (const gchar* str_md5);
+//void remove_data (const gchar* str_md5);
+void remove_data (gchar** data_array);
+void remove_trie (pinyin_trie* cur_trie);
 
 #endif
