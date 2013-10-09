@@ -293,6 +293,11 @@ void finalize_data_trie (const gchar* str_md5)
 {
     gboolean is_ok;
 
+    if ( !str_md5 ) {
+        g_warning (" md5 is null in finalize trie!");
+        return ;
+    }
+
     g_print ("finalize trie md5: %s\n$$$", str_md5);
     is_ok = g_hash_table_remove (trie_table, str_md5);
     if ( !is_ok ) {
