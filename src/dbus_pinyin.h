@@ -29,10 +29,6 @@
 #define DBUS_PYSQL_INFACE   "com.search.pysql"
 
 gchar* get_pinyin(const gchar* zhcn);
-gint init_data_sql (const gchar* data, const gchar* db_path);
-gchar* get_ret_via_key (const gchar* key, const gchar* db_path);
-gint add_value_count (const gchar* table, const gchar* value, 
-        const gchar* db_path);
 
 /* trie */
 void init_hash_table ();

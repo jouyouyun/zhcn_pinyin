@@ -58,32 +58,6 @@ const char *_lock_dbus_iface_xml =
 "           <arg name=\"pinyin\" type=\"s\" direction=\"out\">\n"
 "           </arg>\n"
 "       </method>\n"
-"       <method name=\"init_data_sql\">\n"
-"           <arg name=\"data\" type=\"s\" direction=\"in\">\n"
-"           </arg>\n"
-"           <arg name=\"db_path\" type=\"s\" direction=\"in\">\n"
-"           </arg>\n"
-"           <arg name=\"ret\" type=\"i\" direction=\"out\">\n"
-"           </arg>\n"
-"       </method>\n"
-"       <method name=\"get_ret_via_key\">\n"
-"           <arg name=\"key\" type=\"s\" direction=\"in\">\n"
-"           </arg>\n"
-"           <arg name=\"db_path\" type=\"s\" direction=\"in\">\n"
-"           </arg>\n"
-"           <arg name=\"str_ret\" type=\"s\" direction=\"out\">\n"
-"           </arg>\n"
-"       </method>\n"
-"       <method name=\"add_value_count\">\n"
-"           <arg name=\"table\" type=\"s\" direction=\"in\">\n"
-"           </arg>\n"
-"           <arg name=\"value\" type=\"s\" direction=\"in\">\n"
-"           </arg>\n"
-"           <arg name=\"db_path\" type=\"s\" direction=\"in\">\n"
-"           </arg>\n"
-"           <arg name=\"ret\" type=\"i\" direction=\"out\">\n"
-"           </arg>\n"
-"       </method>\n"
 "       <method name=\"create_pinyin_trie\">\n"
 "           <arg name=\"data\" type=\"s\" direction=\"in\">\n"
 "           </arg>\n"
@@ -240,27 +214,6 @@ _bus_method_call (GDBusConnection * connection,
         retval = g_variant_new("(s)", pinyin ? pinyin : "");
     } else if (g_strcmp0 (method, "finalize_dbus_loop") == 0) {
         finalize_dbus_loop();
-    } else if (g_strcmp0 (method, "init_data_sql") == 0) {
-        const gchar* data = NULL;
-        const gchar* path = NULL;
-
-        g_variant_get (params, "(ss)", &data, &path);
-        retval = g_variant_new ("(i)", init_data_sql (data, path));
-    } else if (g_strcmp0 (method, "get_ret_via_key") == 0) {
-        const gchar* key = NULL;
-        const gchar* path = NULL;
-        gchar* str_ret = NULL;
-
-        g_variant_get (params, "(ss)", &key, &path);
-        str_ret = get_ret_via_key (key, path);
-        retval = g_variant_new ("(s)", str_ret ? str_ret : "");
-    } else if (g_strcmp0 (method, "add_value_count") == 0) {
-        const gchar* table = NULL;
-        const gchar* value = NULL;
-        const gchar* path = NULL;
-
-        g_variant_get (params, "(sss)", &table, &value, &path);
-        retval = g_variant_new ("(i)", add_value_count (table, value, path));
     } else if (g_strcmp0 (method, "create_pinyin_trie") == 0) {
         const gchar* data = NULL;
         gchar* md5 = NULL;
