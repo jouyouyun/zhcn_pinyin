@@ -24,6 +24,5 @@
 int main()
 {
     g_print ("zh pinyin inface\n");
-    init_hash_table ();
     dbus_pinyin();
 }

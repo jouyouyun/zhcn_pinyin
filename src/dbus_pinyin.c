@@ -58,24 +58,6 @@ const char *_lock_dbus_iface_xml =
 "           <arg name=\"pinyin\" type=\"s\" direction=\"out\">\n"
 "           </arg>\n"
 "       </method>\n"
-"       <method name=\"create_pinyin_trie\">\n"
-"           <arg name=\"data\" type=\"s\" direction=\"in\">\n"
-"           </arg>\n"
-"           <arg name=\"md5\" type=\"s\" direction=\"out\">\n"
-"           </arg>\n"
-"       </method>\n"
-"       <method name=\"get_ret_via_keys\">\n"
-"           <arg name=\"keys\" type=\"s\" direction=\"in\">\n"
-"           </arg>\n"
-"           <arg name=\"md5\" type=\"s\" direction=\"in\">\n"
-"           </arg>\n"
-"           <arg name=\"ret\" type=\"s\" direction=\"out\">\n"
-"           </arg>\n"
-"       </method>\n"
-"       <method name=\"finalize_data_trie\">\n"
-"           <arg name=\"md5\" type=\"s\" direction=\"in\">\n"
-"           </arg>\n"
-"       </method>\n"
 "       <method name=\"finalize_dbus_loop\">\n"
 "       </method>\n"
 "   </interface>\n"
@@ -113,7 +95,6 @@ void dbus_pinyin()
 
 void finalize_dbus_loop()
 {
-    finalize_hash_table ();
     g_main_loop_quit(loop);
 }
 
@@ -214,26 +195,6 @@ _bus_method_call (GDBusConnection * connection,
         retval = g_variant_new("(s)", pinyin ? pinyin : "");
     } else if (g_strcmp0 (method, "finalize_dbus_loop") == 0) {
         finalize_dbus_loop();
-    } else if (g_strcmp0 (method, "create_pinyin_trie") == 0) {
-        const gchar* data = NULL;
-        gchar* md5 = NULL;
-
-        g_variant_get (params, "(s)", &data);
-        md5 = create_pinyin_trie (data);
-        retval = g_variant_new ("(s)", md5 ? md5 : "");
-    } else if (g_strcmp0 (method, "get_ret_via_keys") == 0) {
-        const gchar* keys = NULL;
-        const gchar* md5 = NULL;
-        gchar* str_ret = NULL;
-
-        g_variant_get (params, "(ss)", &keys, &md5);
-        str_ret = get_ret_via_keys (keys, md5);
-        retval = g_variant_new ("(s)", str_ret ? str_ret : "");
-    } else if (g_strcmp0 (method, "finalize_data_trie") == 0) {
-        const gchar* md5 = NULL;
-
-        g_variant_get (params, "(s)", &md5);
-        finalize_data_trie (md5);
     } else {
         g_warning ("Calling method '%s' on lock and it's unknown", method);
     }

@@ -30,11 +30,4 @@
 
 gchar* get_pinyin(const gchar* zhcn);
 
-/* trie */
-void init_hash_table ();
-gchar* create_pinyin_trie (const gchar* data);
-gchar* get_ret_via_keys (const gchar* keys, const gchar* str_md5);
-void finalize_data_trie (const gchar* str_md5);
-void finalize_hash_table ();
-
 #endif
