@@ -22,7 +22,7 @@
 #include "pinyin_trie.h"
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
+/*#include <stdio.h>*/
 
 GHashTable* trie_table = NULL;
 GHashTable* data_table = NULL;
@@ -60,7 +60,7 @@ gchar* create_pinyin_trie(const gchar* data)
 
     data_split = g_strsplit (data, ";", -1);
     for (; data_split[i] != NULL; i++ ) {
-        fprintf (stdout, "word: %s\n", data_split[i]);
+        /*fprintf (stdout, "word: %s\n", data_split[i]);*/
         pinyin = get_pinyin (data_split[i]);
         if ( !pinyin ) {
             err_flag = 1;
@@ -292,6 +292,11 @@ void remove_data (gchar** data_array)
 void finalize_data_trie (const gchar* str_md5)
 {
     gboolean is_ok;
+
+    if ( !str_md5 ) {
+        g_warning ("str md5 is null in finalize trie!");
+        return ;
+    }
 
     g_print ("finalize trie md5: %s\n$$$", str_md5);
     is_ok = g_hash_table_remove (trie_table, str_md5);
