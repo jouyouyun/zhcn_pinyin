@@ -48,7 +48,7 @@ gint init_data_sql (const gchar* data, const gchar* db_path)
         return -3;
     }
 
-    str_array =  g_strsplit (data, ",", -1);
+    str_array =  g_strsplit (data, ";", -1);
     while ( *(str_array + i) != NULL ) {
         ret = create_table (*(str_array + i), db);
         if ( ret == -1 ) {
@@ -128,7 +128,7 @@ void insert_record (const gchar* table, const gchar* value, sqlite3* db)
 
 static gchar* str_ret = NULL;
 
-gchar* get_ret_via_key (const gchar* key, const gchar* db_path)
+gchar* get_ret_via_keys (const gchar* key, const gchar* db_path)
 {
     sqlite3* db = NULL;
     gchar* query = NULL;
@@ -198,7 +198,7 @@ static int cb_get_ret (void *data, int col_num,
     if ( !str_ret ) {
         str_ret = g_strdup (buf);
     } else {
-        tmp = g_strdup_printf ("%s,%s", str_ret, buf);
+        tmp = g_strdup_printf ("%s;%s", str_ret, buf);
         g_free (str_ret);
         str_ret = g_strdup (tmp);
         g_free (tmp);
