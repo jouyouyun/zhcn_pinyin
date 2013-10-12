@@ -55,12 +55,18 @@ gchar* create_pinyin_trie(const gchar* data)
         return NULL;
     }
 
+    fprintf (stdout, "\ntrie data: %s\n\n", data);
     str_md5 = g_compute_checksum_for_string (G_CHECKSUM_MD5, 
             data, -1);
+    g_print ("str md5: %s\n", str_md5);
+    if ( !g_utf8_validate (str_md5, -1, NULL) ) {
+        g_warning ("Invalid UTF-8 String!");
+        return NULL;
+    }
 
     data_split = g_strsplit (data, ";", -1);
     for (; data_split[i] != NULL; i++ ) {
-        fprintf (stdout, "word: %s\n", data_split[i]);
+        /*fprintf (stdout, "word: %s\n", data_split[i]);*/
         pinyin = get_pinyin (data_split[i]);
         if ( !pinyin ) {
             err_flag = 1;
@@ -77,9 +83,8 @@ gchar* create_pinyin_trie(const gchar* data)
         return NULL;
     }
 
-    g_hash_table_insert (trie_table, str_md5, root);
+    g_hash_table_insert (trie_table, g_strdup (str_md5), root);
     g_hash_table_insert (data_table, g_strdup (str_md5), data_split);
-    g_print ("str md5: %s\n", str_md5);
     return str_md5;
 }
 
@@ -248,6 +253,7 @@ void destroy_trie (pinyin_trie* cur_node)
     }
 
     if ( cur_node->flag == 1 ) {
+        cur_node->flag = 0;
         g_free (cur_node->ret_pos.pos);
         cur_node->ret_pos.pos = NULL;
     }
@@ -268,6 +274,7 @@ void remove_trie (pinyin_trie* cur_trie)
     }
 
     destroy_trie (cur_trie);
+    g_print ("remove trie over\n");
 
     return ;
 }
@@ -275,16 +282,14 @@ void remove_trie (pinyin_trie* cur_trie)
 void remove_data (gchar** data_array)
 {
     g_print ("remove data\n");
-    g_strfreev (data_array);
-    return;
-    int i = 0;
 
     if ( !data_array ) {
-        g_warning ("args error in remove trie!\n");
+        g_warning ("args error in remove data!\n");
         return ;
     }
 
     g_strfreev (data_array);
+    g_print ("remove data over\n");
 
     return ;
 }
@@ -298,7 +303,7 @@ void finalize_data_trie (const gchar* str_md5)
         return ;
     }
 
-    g_print ("finalize trie md5: %s\n$$$", str_md5);
+    g_print ("finalize trie md5: %s\n", str_md5);
     is_ok = g_hash_table_remove (trie_table, str_md5);
     if ( !is_ok ) {
         g_warning ("remove trie failed!\n");

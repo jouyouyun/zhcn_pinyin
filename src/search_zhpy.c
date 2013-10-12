@@ -84,7 +84,7 @@ gchar* get_pinyin (const gchar* zhcn)
 
         data = select_zhpy (zhcn, db);
         if ( data == NULL ) {
-            return NULL;;
+            return NULL;
         }
         pinyin = g_strdup (data);
         g_free (data);
@@ -109,7 +109,7 @@ gchar* select_zhpy (const gchar* zhcn, sqlite3* db)
         return NULL;
     }
 
-    g_print ("select data: %s\n", data);
+    /*g_print ("select data: %s\n", data);*/
     g_free (query);
     return data;
 }
@@ -121,8 +121,8 @@ static gint cb_search_zhpy (void* data, int col_num,
     gchar* buf = (gchar*)data;
 
     for ( ; i < col_num; i++ ) {
-        g_print ("%s = %s\n", col_name[i], 
-                col_value[i] ? col_value[i] : "NULL");
+        /*g_print ("%s = %s\n", col_name[i], */
+                /*col_value[i] ? col_value[i] : "NULL");*/
         if ( i == 0 ) {
             strcpy (buf, col_value[i]);
         } else {
