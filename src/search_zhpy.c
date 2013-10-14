@@ -75,6 +75,7 @@ gchar* get_pinyin (const gchar* zhcn)
     }
 
     if ( err_flag ) {
+        sqlite3_close (db);
         return NULL;
     }
 
@@ -84,12 +85,14 @@ gchar* get_pinyin (const gchar* zhcn)
 
         data = select_zhpy (zhcn, db);
         if ( data == NULL ) {
+            sqlite3_close (db);
             return NULL;
         }
         pinyin = g_strdup (data);
         g_free (data);
     }
 
+    sqlite3_close (db);
     return pinyin;
 }
 
