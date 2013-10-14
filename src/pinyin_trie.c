@@ -59,10 +59,6 @@ gchar* create_pinyin_trie(const gchar* data)
     str_md5 = g_compute_checksum_for_string (G_CHECKSUM_MD5, 
             data, -1);
     g_print ("str md5: %s\n", str_md5);
-    if ( !g_utf8_validate (str_md5, -1, NULL) ) {
-        g_warning ("Invalid UTF-8 String!");
-        return NULL;
-    }
 
     data_split = g_strsplit (data, ";", -1);
     for (; data_split[i] != NULL; i++ ) {
@@ -131,12 +127,14 @@ void insert_char (char ch, int pos, pinyin_trie* node)
     node->next[k]->ret_pos.cnt += 1;
     len = node->next[k]->ret_pos.cnt;
     /*g_print ("$$$$$ value size: %d\n", len);*/
-    value = calloc (sizeof (int), len);
+    
+    value = g_new0 (int, len);
     memcpy (value, node->next[k]->ret_pos.pos, (len - 1) * sizeof (int));
+    value[len - 1] = pos;
+
     g_free (node->next[k]->ret_pos.pos);
     node->next[k]->ret_pos.pos = value;
     value = NULL;
-    (node->next[k]->ret_pos.pos)[len - 1] = pos;
 }
 
 int ch_to_num (char ch)
@@ -195,8 +193,8 @@ gchar* get_ret_via_keys (const gchar* keys, const gchar* str_md5)
             g_free (tmp);
         }
     }
-    g_free (pos_buf);
-    pos_buf = NULL;
+    /*g_free (pos_buf);*/
+    /*pos_buf = NULL;*/
 
     return ret;
 }
@@ -230,9 +228,9 @@ struct pos_array* search_trie (const char* keys, pinyin_trie* root)
     }
 
     g_print ("%s pos size: %d\n", keys, cur_node->ret_pos.cnt);
-    ret = g_new0 (struct pos_array, sizeof (cur_node->ret_pos));
-    memcpy (ret, &(cur_node->ret_pos), sizeof (cur_node->ret_pos));
-    /**ret = cur_node->ret_pos;*/
+    /*ret = g_new0 (struct pos_array, sizeof (cur_node->ret_pos));*/
+    /*memcpy (ret, &(cur_node->ret_pos), sizeof (cur_node->ret_pos));*/
+    ret = &cur_node->ret_pos;
 
     return ret;
 }
